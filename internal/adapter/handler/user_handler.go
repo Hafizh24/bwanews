@@ -6,6 +6,7 @@ import (
 	"bwanews/internal/core/domain/entity"
 	"bwanews/internal/core/service"
 	validatorLib "bwanews/lib/validator"
+	"errors"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
@@ -81,6 +82,16 @@ func (u *userHandler) UpdatePassword(c *fiber.Ctx) error {
 	if err = validatorLib.ValidateStruct(&req); err != nil {
 		code := "[HANDLER] UpdatePassword-3"
 		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
+	}
+
+	if req.ConfirmPassword != req.NewPassword {
+		code := "[HANDLER] UpdatePassword-4"
+		err = errors.New("Password do not match")
+		log.Errorw(code)
 		errorResp.Meta.Status = false
 		errorResp.Meta.Message = err.Error()
 

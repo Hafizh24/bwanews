@@ -127,6 +127,23 @@ func (c *contentRepository) GetContents(ctx context.Context, query entity.QueryS
 	var modelContents []model.Content
 	var countData int64
 
+	// ✅ ADD: Set default values if not provided
+	if query.Limit <= 0 {
+		query.Limit = 10 // Default limit
+	}
+
+	if query.Page <= 0 {
+		query.Page = 1 // Default page
+	}
+
+	if query.OrderBy == "" {
+		query.OrderBy = "created_at" // Default order
+	}
+
+	if query.OrderType == "" {
+		query.OrderType = "DESC" // Default order type
+	}
+
 	order := fmt.Sprintf("%s %s", query.OrderBy, query.OrderType)
 	offset := (query.Page - 1) * query.Limit
 	status := ""
