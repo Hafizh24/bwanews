@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -17,12 +18,31 @@ var err error
 
 type CloudflareR2Adapter interface {
 	UploadImage(req *entity.FileUploadEntity) (string, error)
+	GeneratePresignedURL(req *entity.FileUploadEntity) (string, error)
 }
 
 type cloudflareR2Adapter struct {
-	Client  *s3.Client
-	Bucket  string
-	BaseUrl string
+	Client    *s3.Client
+	Bucket    string
+	BaseUrl   string
+	ExpiresAt int
+}
+
+// GeneratePresignedURL implements CloudflareR2Adapter.
+func (c *cloudflareR2Adapter) GeneratePresignedURL(req *entity.FileUploadEntity) (string, error) {
+	presignClient := s3.NewPresignClient(c.Client)
+	presignResult, err := presignClient.PresignPutObject(context.TODO(), &s3.PutObjectInput{
+		Bucket: aws.String(c.Bucket),
+		Key:    aws.String(req.Name),
+	}, s3.WithPresignExpires(time.Duration(c.ExpiresAt*int(time.Hour))))
+
+	if err != nil {
+		code = "[CLOUDFLARE R2] GeneratePresignedURL = 1"
+		log.Errorw(code, err)
+		return "", err
+	}
+
+	return presignResult.URL, nil
 }
 
 // UploadImage implements CloudflareR2Adapter.
@@ -57,8 +77,9 @@ func NewCloudflareR2Adapter(client *s3.Client, cfg *config.Config) CloudflareR2A
 		o.BaseEndpoint = aws.String(fmt.Sprintf("https://%s.r2.cloudflarestorage.com", cfg.R2.AccountID))
 	})
 	return &cloudflareR2Adapter{
-		Client:  clientBase,
-		Bucket:  cfg.R2.Name,
-		BaseUrl: cfg.R2.PublicURL,
+		Client:    clientBase,
+		Bucket:    cfg.R2.Name,
+		BaseUrl:   cfg.R2.PublicURL,
+		ExpiresAt: cfg.R2.ExpiresTime,
 	}
 }

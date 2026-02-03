@@ -21,12 +21,13 @@ type PsqlDB struct {
 }
 
 type CloudflareR2 struct {
-	Name      string `json:"name"`
-	ApiKey    string `json:"api_key"`
-	ApiSecret string `json:"api_secret"`
-	Token     string `json:"token"`
-	AccountID string `json:"account_id"`
-	PublicURL string `json:"public_url"`
+	Name        string `json:"name"`
+	ApiKey      string `json:"api_key"`
+	ApiSecret   string `json:"api_secret"`
+	Token       string `json:"token"`
+	AccountID   string `json:"account_id"`
+	PublicURL   string `json:"public_url"`
+	ExpiresTime int    `json:"expires_time"`
 }
 
 type Config struct {
@@ -53,12 +54,13 @@ func NewConfig() *Config {
 			DBMaxIdle: viper.GetInt("DATABASE_MAX_IDLE_CONNECTIONS"),
 		},
 		R2: CloudflareR2{
-			Name:      viper.GetString("CLOUDFLARE_R2_BUCKET_NAME"),
-			ApiKey:    viper.GetString("CLOUDFLARE_R2_API_KEY"),
-			ApiSecret: viper.GetString("CLOUDFLARE_R2_API_SECRET"),
-			Token:     viper.GetString("CLOUDFLARE_R2_TOKEN"),
-			AccountID: viper.GetString("CLOUDFLARE_R2_ACCOUNT_ID"),
-			PublicURL: viper.GetString("CLOUDFLARE_R2_PUBLIC_URL"),
+			Name:        viper.GetString("CLOUDFLARE_R2_BUCKET_NAME"),
+			ApiKey:      viper.GetString("CLOUDFLARE_R2_API_KEY"),
+			ApiSecret:   viper.GetString("CLOUDFLARE_R2_API_SECRET"),
+			Token:       viper.GetString("CLOUDFLARE_R2_TOKEN"),
+			AccountID:   viper.GetString("CLOUDFLARE_R2_ACCOUNT_ID"),
+			PublicURL:   viper.GetString("CLOUDFLARE_R2_PUBLIC_URL"),
+			ExpiresTime: viper.GetInt("CLOUDFLARE_R2_EXPIRES_URL"),
 		},
 	}
 }
